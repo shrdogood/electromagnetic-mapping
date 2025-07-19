@@ -3,7 +3,6 @@ from collections import OrderedDict
 from .base_model import BaseModel
 from .network import networks
 from models.blocks.loss import GANLoss, Diversityloss, PerceptualLoss, TVloss, StyleLoss
-from .testmaskconv import MaskEncoder
 from torchvision import utils
 from loguru import logger
 from functools import reduce
@@ -257,7 +256,7 @@ class PDGAN(BaseModel):
             "input_image": self.input_img,
             "mask": self.mask,
             "ground_truth": self.gt,
-            "pconv_out": self.pre_image,
+            "pconv_out": self.pre_image * self.mask + self.inv_mask * self.gt,
             "fake_A": self.fake_A,
             "fake_B": self.fake_B,
         }
@@ -320,5 +319,5 @@ class PDGAN(BaseModel):
         out_dict["input_image"] = self.input_img
         out_dict["mask"] = self.mask
         out_dict["ground_truth"] = self.gt
-        out_dict["pconv_out"] = self.pre_image
+        out_dict["pconv_out"] = self.pre_image * self.mask + self.inv_mask * self.gt
         return out_dict

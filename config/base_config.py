@@ -3,8 +3,10 @@ import os
 from util import util
 import torch
 
-basic_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-
+basic_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # __file__ 是 Python 中的一个特殊变量，表示当前脚本文件的路径
+# os.path.dirname() 获取 __file__ 所在的目录路径（即文件所在的文件夹）。  /PDGAN/models
+# os.path.join() 将当前目录路径与 ".." 拼接，  ".." 表示当前目录的上一级目录。  /PDGAN/models/..
+# os.path.abspath() 将路径规范化，去除 .. 并返回绝对路径。   /PDGAN
 
 class BaseConfig:
     def __init__(self):
@@ -93,7 +95,8 @@ class BaseConfig:
             "--norm",
             type=str,
             default="instance",
-            help="instance normalization or batch normalization",
+            help="instance normalization or batch normalization",  # BN：假如我们在训练中每次输入一堆图片（batch），那么 BN 会利用这些图片的整体分布来标准化，假设整个 batch 的统计特性是相似的。
+            #  IN：假如我们在训练中输入的每张图片风格都可能不同，那么 IN 会更关注每张图片的自身统计特性，而不依赖于其他样本的分布。
         )
         parser.add_argument(
             "--use_dropout", action="store_true", help="use dropout for the generator"
@@ -187,7 +190,7 @@ class BaseConfig:
             )
             parser = self.initialize(parser)
         self.parser = parser
-        return parser.parse_args()
+        return parser.parse_args()  # 返回包含属性的Namespace对象
 
     def print_config(self, cfg):
         message = ""

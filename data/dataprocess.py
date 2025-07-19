@@ -89,7 +89,7 @@ class Dataset(data.Dataset):
 
     def load_mask(self, index, img):
         _, w, h = img.shape
-        image_shape = [w, h]
+        image_shape = [w, h]  # [256, 256]
         if self.mask_type == "random_bbox":
             bboxs = []
             for i in range(self.mask_setting["num"]):
@@ -113,9 +113,9 @@ class Dataset(data.Dataset):
             else:
                 mask = gray_loader(self.mask_image_files[index])
             mask = transFunc.resize(mask, size=image_shape)
-            mask = transFunc.to_tensor(mask)
-            mask = (mask > 0).float()
-            return mask
+            mask = transFunc.to_tensor(mask)  # (1, 256, 256)
+            mask = (mask < 0.5).float()
+            return mask  # (1, 256, 256)s
         else:
             raise (RuntimeError("No such mask type: %s" % self.mask_type))
 
@@ -201,7 +201,7 @@ def bbox2mask(bboxs, shape, config):
 
 
 def gray_loader(path):
-    return Image.open(path)
+    return Image.open(path).convert("L")
 
 
 def loader(path):
@@ -236,14 +236,14 @@ def get_params(size, transform_cfg):
     return param
 
 
-def transform_image(transform_param, gt_image, normalize=True, toTensor=True):
+def transform_image(transform_param, gt_image, normalize=True, toTensor=True):  # 对图像进行一系列数据增强和预处理操作
     transform_list = []
 
     if transform_param["crop"]:
         crop_position = transform_param["crop"][:2]
         crop_size = transform_param["crop"][2:]
         transform_list.append(
-            transforms.Lambda(lambda img: __crop(img, crop_position, crop_size))
+            transforms.Lambda(lambda img: __crop(img, crop_position, crop_size))  # transforms.Lambda用于对输入图像或张量进行自定义的变换。
         )
     if transform_param["resize"]:
         transform_list.append(transforms.Resize(transform_param["resize"]))
@@ -254,9 +254,9 @@ def transform_image(transform_param, gt_image, normalize=True, toTensor=True):
         transform_list += [transforms.ToTensor()]
 
     if normalize:
-        transform_list += [transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
-    trans = transforms.Compose(transform_list)
-    gt_image = trans(gt_image)
+        transform_list += [transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]  # 归一化参数将图像像素值从 [0, 1] 转换到 [−1,1]。数据中心化到 0 有助于优化器更快收敛。
+    trans = transforms.Compose(transform_list)  # 将上面定义的所有变换组合成一个管道
+    gt_image = trans(gt_image)  # 图像会按照定义的顺序依次执行所有变换。
     return gt_image
 
 

@@ -39,7 +39,7 @@ if __name__ == "__main__":
             iter_start_time = time.time()
             total_steps += cfg.batchSize
             epoch_iter += cfg.batchSize
-            model.set_input(mask, gt)
+            model.set_input(mask, gt)  # 将输入的掩码 (mask) 和目标图像 (gt) 转换成适合训练的形式 （b, 3, 256, 256）  （b, 3, 256, 256）
             model.optimize_parameters()
             # display the training processing
             if total_steps % cfg.display_freq == 0:
